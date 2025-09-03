@@ -1,0 +1,12 @@
+{
+  "name": "@omni/telegram",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "login:ch_telegram_1": "ts-node src/login.ts ch_telegram_1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

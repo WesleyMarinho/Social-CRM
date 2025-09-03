@@ -1,0 +1,198 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  AGENT
+  VIEWER
+}
+
+enum ChannelType {
+  TELEGRAM
+  WHATSAPP
+  INSTAGRAM
+}
+
+enum MessageDirection {
+  IN
+  OUT
+}
+
+model Tenant {
+  id            String            @id @default(cuid())
+  name          String
+  users         UserTenantRole[]
+  channels      AccountChannel[]
+  contacts      Contact[]
+  conversations Conversation[]
+  templates     Template[]
+  createdAt     DateTime          @default(now())
+}
+
+model User {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  hashedPassword String
+  roles          UserTenantRole[]
+  assignments    Assignment[]
+  createdAt      DateTime         @default(now())
+}
+
+model UserTenantRole {
+  id       String @id @default(cuid())
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+  tenantId String
+  role     Role
+  @@unique([userId, tenantId])
+}
+
+model Channel {
+  id              String           @id @default(cuid())
+  type            ChannelType
+  accountChannels AccountChannel[]
+}
+
+model AccountChannel {
+  id          String   @id @default(cuid())
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  channel     Channel  @relation(fields: [channelId], references: [id])
+  channelId   String
+  credentials Json?
+  status      String
+  messages    Message[]
+  createdAt   DateTime @default(now())
+  @@index([tenantId])
+}
+
+model Contact {
+  id          String      @id @default(cuid())
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  displayName String?
+  phone       String?
+  handle      String?
+  platformId  String?
+  channelType ChannelType?
+  conversations Conversation[]
+  createdAt   DateTime    @default(now())
+  @@index([tenantId, channelType])
+  @@index([phone])
+}
+
+model Conversation {
+  id          String          @id @default(cuid())
+  tenant      Tenant          @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  contact     Contact?        @relation(fields: [contactId], references: [id])
+  contactId   String?
+  channel     AccountChannel  @relation(fields: [channelId], references: [id])
+  channelId   String
+  messages    Message[]
+  assignments Assignment[]
+  tags        ConversationTag[]
+  state       String          @default("OPEN")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  @@index([tenantId, state])
+}
+
+model Message {
+  id             String           @id @default(cuid())
+  conversation   Conversation    @relation(fields: [conversationId], references: [id])
+  conversationId String
+  sender         Contact?        @relation(fields: [senderId], references: [id])
+  senderId       String?
+  direction      MessageDirection
+  contents       Json
+  status         String?
+  attachments    Attachment[]
+  createdAt      DateTime        @default(now())
+  @@index([conversationId, createdAt])
+}
+
+model Attachment {
+  id        String  @id @default(cuid())
+  message   Message @relation(fields: [messageId], references: [id])
+  messageId String
+  url       String
+  type      String
+}
+
+model Tag {
+  id          String           @id @default(cuid())
+  tenant      Tenant           @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  name        String
+  conversations ConversationTag[]
+  createdAt   DateTime         @default(now())
+  @@index([tenantId])
+}
+
+model ConversationTag {
+  id            String       @id @default(cuid())
+  conversation  Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  tag           Tag          @relation(fields: [tagId], references: [id])
+  tagId         String
+  @@unique([conversationId, tagId])
+}
+
+model Assignment {
+  id            String       @id @default(cuid())
+  conversation  Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  user          User         @relation(fields: [userId], references: [id])
+  userId        String
+  createdAt     DateTime     @default(now())
+  @@index([userId])
+}
+
+model AutomationRule {
+  id        String    @id @default(cuid())
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  name      String
+  condition Json
+  actions   AutomationAction[]
+  createdAt DateTime  @default(now())
+  @@index([tenantId])
+}
+
+model AutomationAction {
+  id     String         @id @default(cuid())
+  rule   AutomationRule @relation(fields: [ruleId], references: [id])
+  ruleId String
+  type   String
+  params Json?
+}
+
+model EventLog {
+  id        String   @id @default(cuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  action    String
+  payload   Json
+  createdAt DateTime @default(now())
+  @@index([tenantId, createdAt])
+}
+
+model Template {
+  id          String      @id @default(cuid())
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  channelType ChannelType
+  name        String
+  content     Json
+  createdAt   DateTime    @default(now())
+  @@index([tenantId, channelType])
+}

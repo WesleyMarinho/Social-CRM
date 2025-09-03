@@ -1,0 +1,13 @@
+{
+  "name": "@omni/normalizer",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "echo \"No tests\""
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

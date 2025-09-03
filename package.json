@@ -1,0 +1,14 @@
+{
+  "name": "omni-crm",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "echo \"No tests yet\""
+  },
+  "devDependencies": {
+    "turbo": "^1.10.0",
+    "typescript": "^5.3.3"
+  }
+}

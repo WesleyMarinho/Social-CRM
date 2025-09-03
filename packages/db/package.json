@@ -1,0 +1,14 @@
+{
+  "name": "@omni/db",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "migrate": "prisma migrate dev",
+    "seed": "prisma db seed"
+  },
+  "devDependencies": {
+    "@prisma/client": "^5.7.0",
+    "prisma": "^5.7.0",
+    "typescript": "^5.3.3"
+  }
+}

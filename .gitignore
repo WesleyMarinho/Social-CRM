@@ -3,5 +3,7 @@ dist
 .env
 .pnpm-store
 .pnpm-lock.yaml
+# Ignore standard pnpm lockfile to reduce merge conflicts
+pnpm-lock.yaml
 .idea
 .vscode
